@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "myprintf.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,7 +47,7 @@
 
 FDCAN_HandleTypeDef hfdcan1;
 
-SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi4;
 
 TIM_HandleTypeDef htim1;
 
@@ -68,13 +68,14 @@ const osThreadAttr_t defaultTask_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_FDCAN1_Init(void);
-static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_SPI4_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-
+void mpu9250_read_reg(uint8_t reg, uint8_t *data, uint8_t len);
+void mpu9250_write_reg(uint8_t reg, uint8_t data);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -140,9 +141,9 @@ Error_Handler();
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_FDCAN1_Init();
-  MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART3_UART_Init();
+  MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -243,7 +244,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
@@ -306,50 +307,50 @@ static void MX_FDCAN1_Init(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
+  * @brief SPI4 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SPI1_Init(void)
+static void MX_SPI4_Init(void)
 {
 
-  /* USER CODE BEGIN SPI1_Init 0 */
+  /* USER CODE BEGIN SPI4_Init 0 */
 
-  /* USER CODE END SPI1_Init 0 */
+  /* USER CODE END SPI4_Init 0 */
 
-  /* USER CODE BEGIN SPI1_Init 1 */
+  /* USER CODE BEGIN SPI4_Init 1 */
 
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 0x0;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-  hspi1.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
-  hspi1.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
-  hspi1.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
-  hspi1.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
-  hspi1.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
-  hspi1.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
-  hspi1.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
-  hspi1.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
-  hspi1.Init.IOSwap = SPI_IO_SWAP_DISABLE;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  /* USER CODE END SPI4_Init 1 */
+  /* SPI4 parameter configuration*/
+  hspi4.Instance = SPI4;
+  hspi4.Init.Mode = SPI_MODE_MASTER;
+  hspi4.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi4.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi4.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi4.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi4.Init.NSS = SPI_NSS_SOFT;
+  hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi4.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi4.Init.CRCPolynomial = 0x0;
+  hspi4.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi4.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+  hspi4.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+  hspi4.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+  hspi4.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+  hspi4.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+  hspi4.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+  hspi4.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+  hspi4.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
+  hspi4.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+  if (HAL_SPI_Init(&hspi4) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI1_Init 2 */
+  /* USER CODE BEGIN SPI4_Init 2 */
 
-  /* USER CODE END SPI1_Init 2 */
+  /* USER CODE END SPI4_Init 2 */
 
 }
 
@@ -444,7 +445,7 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
   huart3.Init.BaudRate = 115200;
-  huart3.Init.WordLength = UART_WORDLENGTH_9B;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
   huart3.Init.Mode = UART_MODE_TX_RX;
@@ -485,17 +486,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, CS2_Pin|CS1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, CS1_Pin|CS2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : CS2_Pin CS1_Pin */
+  GPIO_InitStruct.Pin = CS2_Pin|CS1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -509,13 +517,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CS1_Pin CS2_Pin */
-  GPIO_InitStruct.Pin = CS1_Pin|CS2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 }
 
@@ -533,10 +534,138 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+
+	void mpu9250_write_reg(uint8_t reg, uint8_t data)
+	{
+		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_RESET);
+		HAL_SPI_Transmit(&hspi4, &reg, 1, 100);
+		HAL_SPI_Transmit(&hspi4, &data, 1, 100);
+		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_SET);
+	}
+	void mpu9250_read_reg(uint8_t reg, uint8_t *data, uint8_t len)
+	{
+		uint8_t temp_data = 0x80|reg;
+		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_RESET);
+		HAL_SPI_Transmit(&hspi4, &temp_data , 1, 100);
+		HAL_SPI_Receive(&hspi4, data, len, 100);
+		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_SET);
+	}
+	/*
+	float get_acc_resolution(const ACCEL_FS_SEL accel_af_sel) const {
+		switch (accel_af_sel) {
+			// Possible accelerometer scales (and their register bit settings) are:
+			// 2 Gs (00), 4 Gs (01), 8 Gs (10), and 16 Gs  (11).
+			// Here's a bit of an algorith to calculate DPS/(ADC tick) based on that 2-bit value:
+			case ACCEL_FS_SEL::A2G:
+				return 2.0 / 32768.0;
+			case ACCEL_FS_SEL::A4G:
+				return 4.0 / 32768.0;
+			case ACCEL_FS_SEL::A8G:
+				return 8.0 / 32768.0;
+			case ACCEL_FS_SEL::A16G:
+				return 16.0 / 32768.0;
+			default:
+				return 0.;
+		}
+	}
+
+	float get_gyro_resolution(const GYRO_FS_SEL gyro_fs_sel) const {
+		switch (gyro_fs_sel) {
+			// Possible gyro scales (and their register bit settings) are:
+			// 250 DPS (00), 500 DPS (01), 1000 DPS (10), and 2000 DPS  (11).
+			// Here's a bit of an algorith to calculate DPS/(ADC tick) based on that 2-bit value:
+			case GYRO_FS_SEL::G250DPS:
+				return 250.0 / 32768.0;
+			case GYRO_FS_SEL::G500DPS:
+				return 500.0 / 32768.0;
+			case GYRO_FS_SEL::G1000DPS:
+				return 1000.0 / 32768.0;
+			case GYRO_FS_SEL::G2000DPS:
+				return 2000.0 / 32768.0;
+			default:
+				return 0.;
+		}
+	}
+
+	float get_mag_resolution(const MAG_OUTPUT_BITS mag_output_bits) const {
+		switch (mag_output_bits) {
+			// Possible magnetometer scales (and their register bit settings) are:
+			// 14 bit resolution (0) and 16 bit resolution (1)
+			// Proper scale to return milliGauss
+			case MAG_OUTPUT_BITS::M14BITS:
+				return 10. * 4912. / 8190.0;
+			case MAG_OUTPUT_BITS::M16BITS:
+				return 10. * 4912. / 32760.0;
+			default:
+				return 0.;
+		}
+	}
+	*/
+
+  // Datos de acelerómetro
+  int16_t accelX_raw;
+  int8_t accelX_data;
+  int16_t accelY_raw;
+  int8_t accelY_data;
+  int16_t accelZ_raw;
+  int8_t accelZ_data;
+  // Datos de giroscopio
+  int16_t gyroX_raw;
+  int16_t gyroX_data;
+  int16_t gyroY_raw;
+  int16_t gyroY_data;
+  int16_t gyroZ_raw;
+  int16_t gyroZ_data;
+  // Datos de magnetometro
+  int16_t magnX_raw;
+  int16_t magnX_data;
+  int16_t magnY_raw;
+  int16_t magnY_data;
+  int16_t magnZ_raw;
+  int16_t magnZ_data;
+  // Datos imu y magnetometro
+  uint8_t imu_data[14];
+  uint8_t magn_data[6];
+  // Configuracion imu y magnetometro
+  mpu9250_write_reg(27, 0b00001100); // 16 Resolution
+  mpu9250_write_reg(28, 0b00001100); // 2000 Resolution
+  //mpu9250_write_reg(??, 0b00000100); // 10. * 4912. / 32760.0 Resolution
+
+  printf("Hello World\n\r");
+
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    // Obtención de datos imu
+	mpu9250_read_reg(59, imu_data, sizeof(imu_data));
+	// Obtención de datos magnometro
+	mpu9250_read_reg(03, magn_data, sizeof(magn_data));
+	// Obtención de lectura acelerómetro
+	accelX_raw = ((int16_t)imu_data[0]<<8) + imu_data[1];
+	accelY_raw = ((int16_t)imu_data[2]<<8) + imu_data[3];
+	accelZ_raw = ((int16_t)imu_data[4]<<8) + imu_data[5];
+	accelX_data = accelX_raw * (16.0 / 32768.0);
+	accelY_data = accelY_raw * (16.0 / 32768.0);
+	accelZ_data = accelZ_raw * (16.0 / 32768.0);
+	// Obtención de lectura giroscopio
+	gyroX_raw = ((int16_t)imu_data[8]<<8) + imu_data[9];
+	gyroY_raw = ((int16_t)imu_data[10]<<8) + imu_data[11];
+	gyroZ_raw = ((int16_t)imu_data[12]<<8) + imu_data[13];
+	gyroX_data = gyroX_raw * (2000.0 / 32768.0) ;
+	gyroY_data = gyroY_raw * (2000.0 / 32768.0) ;
+	gyroZ_data = gyroZ_raw * (2000.0 / 32768.0) ;
+	// Obtención de lectura giroscopio
+	//magnX_raw = ((int16_t)imu_data[0]<<8) + imu_data[1];
+	//magnY_raw = ((int16_t)imu_data[2]<<8) + imu_data[3];
+	//magnZ_raw = ((int16_t)imu_data[4]<<8) + imu_data[5];
+	//magnX_data = magnX_raw * (10. * 4912. / 32760.0);
+	//magnY_data = magnY_raw * (10. * 4912. / 32760.0);
+	//magnZ_data = magnZ_raw * (10. * 4912. / 32760.0);
+
+	//printf("Accelerator data: X %d / Y %d / Z %d\n\r",accelX_data,accelY_data,accelZ_data);
+	printf("Gyroscope data: X %d / Y %d / Z %d\n\r",gyroX_raw,gyroY_raw,gyroZ_raw);
+    //osDelay(1000);
+    //printf("After\n\r");
   }
   /* USER CODE END 5 */
 }

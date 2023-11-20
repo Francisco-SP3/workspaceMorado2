@@ -141,26 +141,26 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* hfdcan)
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 {
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-  if(hspi->Instance==SPI1)
+  if(hspi->Instance==SPI4)
   {
-  /* USER CODE BEGIN SPI1_MspInit 0 */
+  /* USER CODE BEGIN SPI4_MspInit 0 */
 
-  /* USER CODE END SPI1_MspInit 0 */
+  /* USER CODE END SPI4_MspInit 0 */
 
   /** Initializes the peripherals clock
   */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1;
-    PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
+    PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_D2PCLK1;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();
     }
 
     /* Peripheral clock enable */
-    __HAL_RCC_SPI1_CLK_ENABLE();
-  /* USER CODE BEGIN SPI1_MspInit 1 */
+    __HAL_RCC_SPI4_CLK_ENABLE();
+  /* USER CODE BEGIN SPI4_MspInit 1 */
 
-  /* USER CODE END SPI1_MspInit 1 */
+  /* USER CODE END SPI4_MspInit 1 */
   }
 
 }
@@ -173,16 +173,16 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 */
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 {
-  if(hspi->Instance==SPI1)
+  if(hspi->Instance==SPI4)
   {
-  /* USER CODE BEGIN SPI1_MspDeInit 0 */
+  /* USER CODE BEGIN SPI4_MspDeInit 0 */
 
-  /* USER CODE END SPI1_MspDeInit 0 */
+  /* USER CODE END SPI4_MspDeInit 0 */
     /* Peripheral clock disable */
-    __HAL_RCC_SPI1_CLK_DISABLE();
-  /* USER CODE BEGIN SPI1_MspDeInit 1 */
+    __HAL_RCC_SPI4_CLK_DISABLE();
+  /* USER CODE BEGIN SPI4_MspDeInit 1 */
 
-  /* USER CODE END SPI1_MspDeInit 1 */
+  /* USER CODE END SPI4_MspDeInit 1 */
   }
 
 }

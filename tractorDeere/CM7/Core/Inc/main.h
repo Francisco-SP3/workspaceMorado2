@@ -59,6 +59,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define CS2_Pin GPIO_PIN_3
+#define CS2_GPIO_Port GPIOE
+#define CS1_Pin GPIO_PIN_4
+#define CS1_GPIO_Port GPIOE
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
 #define LD1_Pin GPIO_PIN_0
@@ -69,10 +73,6 @@ void Error_Handler(void);
 #define STLINK_RX_GPIO_Port GPIOD
 #define STLINK_TX_Pin GPIO_PIN_9
 #define STLINK_TX_GPIO_Port GPIOD
-#define CS1_Pin GPIO_PIN_14
-#define CS1_GPIO_Port GPIOD
-#define CS2_Pin GPIO_PIN_15
-#define CS2_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
