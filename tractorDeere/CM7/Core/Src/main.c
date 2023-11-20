@@ -663,7 +663,7 @@ void StartDefaultTask(void *argument)
 	//magnZ_data = magnZ_raw * (10. * 4912. / 32760.0);
 
 	//printf("Accelerator data: X %d / Y %d / Z %d\n\r",accelX_data,accelY_data,accelZ_data);
-	printf("Gyroscope data: X %d / Y %d / Z %d\n\r",gyroX_raw,gyroY_raw,gyroZ_raw);
+	printf("Gyroscope data: X %d / Y %d / Z %d\n\r",gyroX_data,gyroY_data,gyroZ_data);
     //osDelay(1000);
     //printf("After\n\r");
   }
