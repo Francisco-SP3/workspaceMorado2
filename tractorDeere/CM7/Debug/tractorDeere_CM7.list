@@ -3212,7 +3212,7 @@ Error_Handler();
   /* USER CODE BEGIN 2 */
 
 	// NRF24 inicialization
-	NRF24_begin(GPIOE, CS_W_Pin, CE_W_Pin, hspi4);
+	NRF24_begin(GPIOE, GPIO_PIN_3, GPIO_PIN_10, hspi4);
  80019f6:	4c20      	ldr	r4, [pc, #128]	; (8001a78 <main+0x124>)
  80019f8:	4668      	mov	r0, sp
  80019fa:	1d23      	adds	r3, r4, #4

@@ -152,7 +152,7 @@ Error_Handler();
   /* USER CODE BEGIN 2 */
 
 	// NRF24 inicialization
-	NRF24_begin(GPIOE, CS_W_Pin, CE_W_Pin, hspi4);
+	NRF24_begin(GPIOE, GPIO_PIN_3, GPIO_PIN_10, hspi4);
 	nrf24_DebugUART_Init(huart3);
 
 	// NRF24 setup to read
