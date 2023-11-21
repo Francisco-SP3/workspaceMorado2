@@ -393,11 +393,11 @@ static void MX_TIM13_Init(void)
 
   /* USER CODE END TIM13_Init 1 */
   htim13.Instance = TIM13;
-  htim13.Init.Prescaler = 0;
+  htim13.Init.Prescaler = 72;
   htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim13.Init.Period = 65535;
   htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
   {
     Error_Handler();
@@ -439,11 +439,11 @@ static void MX_TIM14_Init(void)
 
   /* USER CODE END TIM14_Init 1 */
   htim14.Instance = TIM14;
-  htim14.Init.Prescaler = 0;
+  htim14.Init.Prescaler = 72;
   htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim14.Init.Period = 65535;
   htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
   {
     Error_Handler();
@@ -724,8 +724,33 @@ void StartDefaultTask(void *argument)
 		//HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32+2, 10);
 	}
 	*/
+	  	  MX_TIM14_Init();
+	  	  MX_TIM13_Init();
+  /* USER CODE BEGIN 2 */
+	  	  HAL_TIM_PWM_Start(&htim14,TIM_CHANNEL_1);
+	 	  HAL_TIM_PWM_Start(&htim13,TIM_CHANNEL_1);
+	  	  double pulseWidthServo= 0.0011;
+	  	  double pulseWidth= 0.0015;
+	  	  double ccr = 0;
+	  	  double ccrservo=0;
 
+	  	  ccrservo=(pulseWidthServo * htim13.Init.Period )/0.02;
+	  	  htim13.Instance -> CCR1=ccrservo;
 
+	  	  ccr = (pulseWidth * htim14.Init.Period )/0.02;
+	  	  htim14.Instance -> CCR1 = ccr;
+	  	  HAL_Delay(2000);
+
+	  	  double i=0.00001;
+	  	  while(pulseWidth<0.001){
+	  		  ccr=(pulseWidth*htim14.Init.Period)/0.02;
+	  		  htim14.Instance -> CCR1=ccr;
+	  		  HAL_Delay(50);
+	  		  pulseWidth -= i;
+	  	  }
+	  	  ccr = (pulseWidth * htim14.Init.Period)/0.02;
+	  	  htim14.Instance-> CCR1 = ccr;
+	  	  HAL_Delay(2000);
 
   }
   /* USER CODE END 5 */
