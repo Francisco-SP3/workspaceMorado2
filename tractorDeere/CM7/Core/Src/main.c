@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "myprintf.h"
+#include "MY_NRF24.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +50,8 @@ FDCAN_HandleTypeDef hfdcan1;
 
 SPI_HandleTypeDef hspi4;
 
-TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim13;
+TIM_HandleTypeDef htim14;
 
 UART_HandleTypeDef huart3;
 
@@ -61,16 +63,18 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
-
+uint64_t RxpipeAddrs = 0x11223344AA;
+uint8_t myRxData[100];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_FDCAN1_Init(void);
-static void MX_TIM1_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_SPI4_Init(void);
+static void MX_TIM13_Init(void);
+static void MX_TIM14_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -141,10 +145,25 @@ Error_Handler();
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_FDCAN1_Init();
-  MX_TIM1_Init();
   MX_USART3_UART_Init();
   MX_SPI4_Init();
+  MX_TIM13_Init();
+  MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
+
+	// NRF24 inicialization
+	NRF24_begin(GPIOE, CS_W_Pin, CE_W_Pin, hspi4);
+	nrf24_DebugUART_Init(huart3);
+
+	// NRF24 setup to read
+	NRF24_setAutoAck(false);
+	NRF24_setChannel(52);
+	NRF24_setPayloadSize(32);
+	NRF24_setDataRate(RF24_2MBPS);
+	NRF24_openReadingPipe(0, RxpipeAddrs);
+	NRF24_enableDynamicPayloads();
+	printRadioSettings();
+	NRF24_startListening();
 
   /* USER CODE END 2 */
 
@@ -355,76 +374,94 @@ static void MX_SPI4_Init(void)
 }
 
 /**
-  * @brief TIM1 Initialization Function
+  * @brief TIM13 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM1_Init(void)
+static void MX_TIM13_Init(void)
 {
 
-  /* USER CODE BEGIN TIM1_Init 0 */
+  /* USER CODE BEGIN TIM13_Init 0 */
 
-  /* USER CODE END TIM1_Init 0 */
+  /* USER CODE END TIM13_Init 0 */
 
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
-  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
-  /* USER CODE BEGIN TIM1_Init 1 */
+  /* USER CODE BEGIN TIM13_Init 1 */
 
-  /* USER CODE END TIM1_Init 1 */
-  htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 0;
-  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 65535;
-  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+  /* USER CODE END TIM13_Init 1 */
+  htim13.Instance = TIM13;
+  htim13.Init.Prescaler = 0;
+  htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim13.Init.Period = 65535;
+  htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  if (HAL_TIM_PWM_Init(&htim13) != HAL_OK)
   {
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim13, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
-  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-  sBreakDeadTimeConfig.DeadTime = 0;
-  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-  sBreakDeadTimeConfig.BreakFilter = 0;
-  sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
-  sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
-  sBreakDeadTimeConfig.Break2Filter = 0;
-  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM1_Init 2 */
+  /* USER CODE BEGIN TIM13_Init 2 */
 
-  /* USER CODE END TIM1_Init 2 */
-  HAL_TIM_MspPostInit(&htim1);
+  /* USER CODE END TIM13_Init 2 */
+  HAL_TIM_MspPostInit(&htim13);
+
+}
+
+/**
+  * @brief TIM14 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM14_Init(void)
+{
+
+  /* USER CODE BEGIN TIM14_Init 0 */
+
+  /* USER CODE END TIM14_Init 0 */
+
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM14_Init 1 */
+
+  /* USER CODE END TIM14_Init 1 */
+  htim14.Instance = TIM14;
+  htim14.Init.Prescaler = 0;
+  htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim14.Init.Period = 65535;
+  htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim14) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim14, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM14_Init 2 */
+
+  /* USER CODE END TIM14_Init 2 */
+  HAL_TIM_MspPostInit(&htim14);
 
 }
 
@@ -488,18 +525,19 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, CS2_Pin|CS1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, CS_W_Pin|CS_I_Pin|CE_W_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : CS2_Pin CS1_Pin */
-  GPIO_InitStruct.Pin = CS2_Pin|CS1_Pin;
+  /*Configure GPIO pins : CS_W_Pin CS_I_Pin CE_W_Pin */
+  GPIO_InitStruct.Pin = CS_W_Pin|CS_I_Pin|CE_W_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -521,6 +559,73 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/*
+void mpu9250_write_reg(uint8_t reg, uint8_t data)
+{
+	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi4, &reg, 1, 100);
+	HAL_SPI_Transmit(&hspi4, &data, 1, 100);
+	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_SET);
+}
+void mpu9250_read_reg(uint8_t reg, uint8_t *data, uint8_t len)
+{
+	uint8_t temp_data = 0x80|reg;
+	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi4, &temp_data , 1, 100);
+	HAL_SPI_Receive(&hspi4, data, len, 100);
+	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_SET);
+}
+
+float get_acc_resolution(const ACCEL_FS_SEL accel_af_sel) const {
+	switch (accel_af_sel) {
+		// Possible accelerometer scales (and their register bit settings) are:
+		// 2 Gs (00), 4 Gs (01), 8 Gs (10), and 16 Gs  (11).
+		// Here's a bit of an algorith to calculate DPS/(ADC tick) based on that 2-bit value:
+		case ACCEL_FS_SEL::A2G:
+			return 2.0 / 32768.0;
+		case ACCEL_FS_SEL::A4G:
+			return 4.0 / 32768.0;
+		case ACCEL_FS_SEL::A8G:
+			return 8.0 / 32768.0;
+		case ACCEL_FS_SEL::A16G:
+			return 16.0 / 32768.0;
+		default:
+			return 0.;
+	}
+}
+
+float get_gyro_resolution(const GYRO_FS_SEL gyro_fs_sel) const {
+	switch (gyro_fs_sel) {
+		// Possible gyro scales (and their register bit settings) are:
+		// 250 DPS (00), 500 DPS (01), 1000 DPS (10), and 2000 DPS  (11).
+		// Here's a bit of an algorith to calculate DPS/(ADC tick) based on that 2-bit value:
+		case GYRO_FS_SEL::G250DPS:
+			return 250.0 / 32768.0;
+		case GYRO_FS_SEL::G500DPS:
+			return 500.0 / 32768.0;
+		case GYRO_FS_SEL::G1000DPS:
+			return 1000.0 / 32768.0;
+		case GYRO_FS_SEL::G2000DPS:
+			return 2000.0 / 32768.0;
+		default:
+			return 0.;
+	}
+}
+
+float get_mag_resolution(const MAG_OUTPUT_BITS mag_output_bits) const {
+	switch (mag_output_bits) {
+		// Possible magnetometer scales (and their register bit settings) are:
+		// 14 bit resolution (0) and 16 bit resolution (1)
+		// Proper scale to return milliGauss
+		case MAG_OUTPUT_BITS::M14BITS:
+			return 10. * 4912. / 8190.0;
+		case MAG_OUTPUT_BITS::M16BITS:
+			return 10. * 4912. / 32760.0;
+		default:
+			return 0.;
+	}
+}
+*/
 
 /* USER CODE END 4 */
 
@@ -534,73 +639,8 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-
-	void mpu9250_write_reg(uint8_t reg, uint8_t data)
-	{
-		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_RESET);
-		HAL_SPI_Transmit(&hspi4, &reg, 1, 100);
-		HAL_SPI_Transmit(&hspi4, &data, 1, 100);
-		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_SET);
-	}
-	void mpu9250_read_reg(uint8_t reg, uint8_t *data, uint8_t len)
-	{
-		uint8_t temp_data = 0x80|reg;
-		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_RESET);
-		HAL_SPI_Transmit(&hspi4, &temp_data , 1, 100);
-		HAL_SPI_Receive(&hspi4, data, len, 100);
-		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, GPIO_PIN_SET);
-	}
-	/*
-	float get_acc_resolution(const ACCEL_FS_SEL accel_af_sel) const {
-		switch (accel_af_sel) {
-			// Possible accelerometer scales (and their register bit settings) are:
-			// 2 Gs (00), 4 Gs (01), 8 Gs (10), and 16 Gs  (11).
-			// Here's a bit of an algorith to calculate DPS/(ADC tick) based on that 2-bit value:
-			case ACCEL_FS_SEL::A2G:
-				return 2.0 / 32768.0;
-			case ACCEL_FS_SEL::A4G:
-				return 4.0 / 32768.0;
-			case ACCEL_FS_SEL::A8G:
-				return 8.0 / 32768.0;
-			case ACCEL_FS_SEL::A16G:
-				return 16.0 / 32768.0;
-			default:
-				return 0.;
-		}
-	}
-
-	float get_gyro_resolution(const GYRO_FS_SEL gyro_fs_sel) const {
-		switch (gyro_fs_sel) {
-			// Possible gyro scales (and their register bit settings) are:
-			// 250 DPS (00), 500 DPS (01), 1000 DPS (10), and 2000 DPS  (11).
-			// Here's a bit of an algorith to calculate DPS/(ADC tick) based on that 2-bit value:
-			case GYRO_FS_SEL::G250DPS:
-				return 250.0 / 32768.0;
-			case GYRO_FS_SEL::G500DPS:
-				return 500.0 / 32768.0;
-			case GYRO_FS_SEL::G1000DPS:
-				return 1000.0 / 32768.0;
-			case GYRO_FS_SEL::G2000DPS:
-				return 2000.0 / 32768.0;
-			default:
-				return 0.;
-		}
-	}
-
-	float get_mag_resolution(const MAG_OUTPUT_BITS mag_output_bits) const {
-		switch (mag_output_bits) {
-			// Possible magnetometer scales (and their register bit settings) are:
-			// 14 bit resolution (0) and 16 bit resolution (1)
-			// Proper scale to return milliGauss
-			case MAG_OUTPUT_BITS::M14BITS:
-				return 10. * 4912. / 8190.0;
-			case MAG_OUTPUT_BITS::M16BITS:
-				return 10. * 4912. / 32760.0;
-			default:
-				return 0.;
-		}
-	}
-	*/
+  /*
+  // IMU
 
   // Datos de acelerómetro
   int16_t accelX_raw;
@@ -632,10 +672,16 @@ void StartDefaultTask(void *argument)
   //mpu9250_write_reg(??, 0b00000100); // 10. * 4912. / 32760.0 Resolution
 
   printf("Hello World\n\r");
+  */
+
+
 
   /* Infinite loop */
   for(;;)
   {
+	/*
+	// IMU
+
     // Obtención de datos imu
 	mpu9250_read_reg(59, imu_data, sizeof(imu_data));
 	// Obtención de datos magnometro
@@ -666,6 +712,13 @@ void StartDefaultTask(void *argument)
 	printf("Gyroscope data: X %d / Y %d / Z %d\n\r",gyroX_data,gyroY_data,gyroZ_data);
     //osDelay(1000);
     //printf("After\n\r");
+    */
+
+    if(NRF24_available()){
+		NRF24_read(myRxData, 32);
+		printf(myRxData[0],myRxData[1],myRxData[2],myRxData[3],myRxData[4],myRxData[5],myRxData[6]);
+		//HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32+2, 10);
+	}
   }
   /* USER CODE END 5 */
 }

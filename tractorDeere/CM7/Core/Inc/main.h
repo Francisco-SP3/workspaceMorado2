@@ -59,14 +59,16 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define CS2_Pin GPIO_PIN_3
-#define CS2_GPIO_Port GPIOE
-#define CS1_Pin GPIO_PIN_4
-#define CS1_GPIO_Port GPIOE
+#define CS_W_Pin GPIO_PIN_3
+#define CS_W_GPIO_Port GPIOE
+#define CS_I_Pin GPIO_PIN_4
+#define CS_I_GPIO_Port GPIOE
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
 #define LD1_Pin GPIO_PIN_0
 #define LD1_GPIO_Port GPIOB
+#define CE_W_Pin GPIO_PIN_10
+#define CE_W_GPIO_Port GPIOE
 #define LD3_Pin GPIO_PIN_14
 #define LD3_GPIO_Port GPIOB
 #define STLINK_RX_Pin GPIO_PIN_8
