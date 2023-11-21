@@ -151,6 +151,7 @@ Error_Handler();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
 
+  /*
 	// NRF24 inicialization
 	NRF24_begin(GPIOE, GPIO_PIN_3, GPIO_PIN_10, hspi4);
 	nrf24_DebugUART_Init(huart3);
@@ -164,6 +165,7 @@ Error_Handler();
 	NRF24_enableDynamicPayloads();
 	printRadioSettings();
 	NRF24_startListening();
+  */
 
   /* USER CODE END 2 */
 
@@ -713,12 +715,18 @@ void StartDefaultTask(void *argument)
     //osDelay(1000);
     //printf("After\n\r");
     */
+	/*
+	// NRF24
 
     if(NRF24_available()){
 		NRF24_read(myRxData, 32);
 		printf(myRxData[0],myRxData[1],myRxData[2],myRxData[3],myRxData[4],myRxData[5],myRxData[6]);
 		//HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32+2, 10);
 	}
+	*/
+
+
+
   }
   /* USER CODE END 5 */
 }
