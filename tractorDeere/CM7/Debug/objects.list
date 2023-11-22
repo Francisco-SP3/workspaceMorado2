@@ -2,6 +2,7 @@
 "./Core/Src/MY_NRF24.o"
 "./Core/Src/freertos.o"
 "./Core/Src/main.o"
+"./Core/Src/mpu9250.o"
 "./Core/Src/myprintf.o"
 "./Core/Src/stm32h7xx_hal_msp.o"
 "./Core/Src/stm32h7xx_hal_timebase_tim.o"

@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "myprintf.h"
 #include "MY_NRF24.h"
+#include "mpu9250.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,12 +61,20 @@ UART_HandleTypeDef huart3;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 128 * 8,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
+
+// NRF Private Variables
 uint64_t RxpipeAddrs = 0x11223344AA;
 uint8_t myRxData[100];
+
+// MPU Private Variables
+uint8_t ak8963_WhoAmI = 0;
+uint8_t mpu9250_WhoAmI = 0;
+MPU9250 mpu;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -161,6 +170,9 @@ Error_Handler();
   // NRF24 Inicialization
   NRF24_begin(GPIOB, GPIO_PIN_2, GPIO_PIN_1, hspi1);
   nrf24_DebugUART_Init(huart3);
+
+  // MPU Inicialization
+  MPU9250_Init(&mpu);
 
   // NRF24 setup to read
   NRF24_setAutoAck(false);
@@ -586,17 +598,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(CS_I_GPIO_Port, CS_I_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GY_CS_GPIO_Port, GY_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LD1_Pin|SPI_CE_Pin|SPI_CSN_Pin|LD3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : CS_I_Pin */
-  GPIO_InitStruct.Pin = CS_I_Pin;
+  /*Configure GPIO pin : GY_CS_Pin */
+  GPIO_InitStruct.Pin = GY_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(CS_I_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GY_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -730,10 +742,37 @@ void StartDefaultTask(void *argument)
   */
 
 
+  printf("System start up!\r\n");
 
   /* Infinite loop */
   for(;;)
   {
+
+	ak8963_WhoAmI = mpu_r_ak8963_WhoAmI(&mpu);
+	mpu9250_WhoAmI = mpu_r_WhoAmI(&mpu);
+	MPU9250_ReadAccel(&mpu);
+	MPU9250_ReadGyro(&mpu);
+	MPU9250_ReadMag(&mpu);
+
+	osDelay(1000);
+
+	printf("AK8963: 0x%x\nMPU9250: 0x%x\r\n", ak8963_WhoAmI,
+			mpu9250_WhoAmI);
+	printf("AX:%d \tAY:%d\t AZ:%d\r\n", mpu.mpu_data.Accel_row[0],
+			mpu.mpu_data.Accel_row[1], mpu.mpu_data.Accel_row[2]);
+	printf("AX:%.3f \tAY:%.3f\t AZ:%.3f\r\n", mpu.mpu_data.Accel[0],
+			mpu.mpu_data.Accel[1], mpu.mpu_data.Accel[2]);
+	printf("GX:%d \tGY:%d\t GZ:%d\r\n", mpu.mpu_data.Gyro_row[0],
+			mpu.mpu_data.Gyro_row[1], mpu.mpu_data.Gyro_row[2]);
+	printf("GX:%.3f \tGY:%.3f\t GZ:%.3f\r\n", mpu.mpu_data.Gyro[0],
+			mpu.mpu_data.Gyro[1], mpu.mpu_data.Gyro[2]);
+	printf("MX:%d \tMY:%d\t MZ:%d\r\n", mpu.mpu_data.Magn_row[0],
+			mpu.mpu_data.Magn_row[1], mpu.mpu_data.Magn_row[2]);
+	printf("MX:%.3f \tMY:%.3f\t MZ:%.3f\r\n", mpu.mpu_data.Magn[0],
+			mpu.mpu_data.Magn[1], mpu.mpu_data.Magn[2]);
+	printf("*************************\r\n");
+
+	//osDelay(50);
 	/*
 	// IMU
 
@@ -769,6 +808,7 @@ void StartDefaultTask(void *argument)
     //printf("After\n\r");
     */
 
+	/*
 	// NRF24
 
 
@@ -777,7 +817,7 @@ void StartDefaultTask(void *argument)
 	  printf("Coordinates: %d %d %d %d %d %d %d \r\n", myRxData[0],myRxData[1],myRxData[2],myRxData[3],myRxData[4],myRxData[5],myRxData[6]);
 	  // HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32, 10);
   	}
-
+	*/
 
 	  /*
 	  //ESC
