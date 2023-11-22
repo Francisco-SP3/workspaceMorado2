@@ -152,21 +152,31 @@ Error_Handler();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim14,TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim13,TIM_CHANNEL_1);
-  /*
+  //*
 	// NRF24 inicialization
 	NRF24_begin(GPIOE, GPIO_PIN_3, GPIO_PIN_10, hspi4);
+	osDelay(10);
 	nrf24_DebugUART_Init(huart3);
 
 	// NRF24 setup to read
 	NRF24_setAutoAck(false);
+	osDelay(10);
 	NRF24_setChannel(52);
+	osDelay(10);
 	NRF24_setPayloadSize(32);
+	osDelay(10);
 	NRF24_setDataRate(RF24_2MBPS);
+	osDelay(10);
 	NRF24_openReadingPipe(0, RxpipeAddrs);
+	osDelay(10);
 	NRF24_enableDynamicPayloads();
+	osDelay(10);
 	printRadioSettings();
+	osDelay(10);
 	NRF24_startListening();
-  */
+	osDelay(10);
+
+  //
 
   /* USER CODE END 2 */
 
@@ -347,8 +357,8 @@ static void MX_SPI4_Init(void)
   hspi4.Init.Mode = SPI_MODE_MASTER;
   hspi4.Init.Direction = SPI_DIRECTION_2LINES;
   hspi4.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi4.Init.CLKPolarity = SPI_POLARITY_HIGH;
-  hspi4.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi4.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi4.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi4.Init.NSS = SPI_NSS_SOFT;
   hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
@@ -715,18 +725,20 @@ void StartDefaultTask(void *argument)
     //osDelay(1000);
     //printf("After\n\r");
     */
-	/*
-	// NRF24
+		// NRF24
 
-    if(NRF24_available()){
-		NRF24_read(myRxData, 32);
-		printf(myRxData[0],myRxData[1],myRxData[2],myRxData[3],myRxData[4],myRxData[5],myRxData[6]);
-		//HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32+2, 10);
-	}
-   */
+	  	printf("hola \r\n");
+	  	 osDelay(1000);
+
+	    if(NRF24_available()){
+		  NRF24_read(myRxData, 32);
+		  printf("Coordinates: %d %d %d %d %d %d %d \r\n", myRxData[0],myRxData[1],myRxData[2],myRxData[3],myRxData[4],myRxData[5],myRxData[6]);
+		  //HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32, 10);
+	  	}
 
 
-	  //ESC
+
+	  /*ESC
 	  	  double pulseWidthServo= 0.0015;
 	  	  double pulseWidth= 0.0015;
 	  	  double ccr = 0;
@@ -765,7 +777,7 @@ void StartDefaultTask(void *argument)
 
 
 
-	  /*
+
 	  printf("Hello World \r\n");
 	  osDelay(1000);
 	  printf("Goodbye World \r\n");
