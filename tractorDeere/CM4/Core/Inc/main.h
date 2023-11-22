@@ -65,7 +65,6 @@ void Error_Handler(void);
 #define LD2_GPIO_Port GPIOE
 void   MX_FDCAN1_Init(void);
 void   MX_USART3_UART_Init(void);
-void   MX_SPI4_Init(void);
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

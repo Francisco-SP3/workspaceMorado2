@@ -48,6 +48,7 @@
 
 FDCAN_HandleTypeDef hfdcan1;
 
+SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi4;
 
 TIM_HandleTypeDef htim13;
@@ -75,6 +76,7 @@ static void MX_USART3_UART_Init(void);
 static void MX_SPI4_Init(void);
 static void MX_TIM13_Init(void);
 static void MX_TIM14_Init(void);
+static void MX_SPI1_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -149,24 +151,26 @@ Error_Handler();
   MX_SPI4_Init();
   MX_TIM13_Init();
   MX_TIM14_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+
+  // PWM Inicialiaztion
   HAL_TIM_PWM_Start(&htim14,TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim13,TIM_CHANNEL_1);
-  /*
-	// NRF24 inicialization
-	NRF24_begin(GPIOE, GPIO_PIN_3, GPIO_PIN_10, hspi4);
-	nrf24_DebugUART_Init(huart3);
 
-	// NRF24 setup to read
-	NRF24_setAutoAck(false);
-	NRF24_setChannel(52);
-	NRF24_setPayloadSize(32);
-	NRF24_setDataRate(RF24_2MBPS);
-	NRF24_openReadingPipe(0, RxpipeAddrs);
-	NRF24_enableDynamicPayloads();
-	printRadioSettings();
-	NRF24_startListening();
-  */
+  // NRF24 Inicialization
+  NRF24_begin(GPIOB, GPIO_PIN_2, GPIO_PIN_1, hspi1);
+  nrf24_DebugUART_Init(huart3);
+
+  // NRF24 setup to read
+  NRF24_setAutoAck(false);
+  NRF24_setChannel(52);
+  NRF24_setPayloadSize(32);
+  NRF24_setDataRate(RF24_2MBPS);
+  NRF24_openReadingPipe(0, RxpipeAddrs);
+  NRF24_enableDynamicPayloads();
+  printRadioSettings();
+  NRF24_startListening();
 
   /* USER CODE END 2 */
 
@@ -324,6 +328,54 @@ static void MX_FDCAN1_Init(void)
   /* USER CODE BEGIN FDCAN1_Init 2 */
 
   /* USER CODE END FDCAN1_Init 2 */
+
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 0x0;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi1.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+  hspi1.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+  hspi1.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+  hspi1.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+  hspi1.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+  hspi1.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+  hspi1.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+  hspi1.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
+  hspi1.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -529,21 +581,22 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, CS_W_Pin|CS_I_Pin|CE_W_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(CS_I_GPIO_Port, CS_I_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LD1_Pin|SPI_CE_Pin|SPI_CSN_Pin|LD3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : CS_W_Pin CS_I_Pin CE_W_Pin */
-  GPIO_InitStruct.Pin = CS_W_Pin|CS_I_Pin|CE_W_Pin;
+  /*Configure GPIO pin : CS_I_Pin */
+  GPIO_InitStruct.Pin = CS_I_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  HAL_GPIO_Init(CS_I_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -551,8 +604,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD1_Pin LD3_Pin */
-  GPIO_InitStruct.Pin = LD1_Pin|LD3_Pin;
+  /*Configure GPIO pins : LD1_Pin SPI_CE_Pin SPI_CSN_Pin LD3_Pin */
+  GPIO_InitStruct.Pin = LD1_Pin|SPI_CE_Pin|SPI_CSN_Pin|LD3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -715,17 +768,18 @@ void StartDefaultTask(void *argument)
     //osDelay(1000);
     //printf("After\n\r");
     */
-	/*
+
 	// NRF24
 
+
     if(NRF24_available()){
-		NRF24_read(myRxData, 32);
-		printf(myRxData[0],myRxData[1],myRxData[2],myRxData[3],myRxData[4],myRxData[5],myRxData[6]);
-		//HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32+2, 10);
-	}
-   */
+	  NRF24_read(myRxData, 32);
+	  printf("Coordinates: %d %d %d %d %d %d %d \r\n", myRxData[0],myRxData[1],myRxData[2],myRxData[3],myRxData[4],myRxData[5],myRxData[6]);
+	  // HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32, 10);
+  	}
 
 
+	  /*
 	  //ESC
 	  	  double pulseWidthServo= 0.0015;
 	  	  double pulseWidth= 0.0015;
@@ -762,7 +816,7 @@ void StartDefaultTask(void *argument)
 	  	//  HAL_Delay(2000);
 	  	  osDelay(2000);
 	  	printf("Hello World \r\n");
-
+	  */
 
 
 	  /*
