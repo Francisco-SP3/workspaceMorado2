@@ -150,7 +150,8 @@ Error_Handler();
   MX_TIM13_Init();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_PWM_Start(&htim14,TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim13,TIM_CHANNEL_1);
   /*
 	// NRF24 inicialization
 	NRF24_begin(GPIOE, GPIO_PIN_3, GPIO_PIN_10, hspi4);
@@ -237,19 +238,18 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 9;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 1;
+  RCC_OscInitStruct.PLL.PLLN = 18;
   RCC_OscInitStruct.PLL.PLLP = 2;
   RCC_OscInitStruct.PLL.PLLQ = 3;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOMEDIUM;
-  RCC_OscInitStruct.PLL.PLLFRACN = 3072;
+  RCC_OscInitStruct.PLL.PLLFRACN = 6144;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -260,7 +260,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
@@ -393,7 +393,7 @@ static void MX_TIM13_Init(void)
 
   /* USER CODE END TIM13_Init 1 */
   htim13.Instance = TIM13;
-  htim13.Init.Prescaler = 72;
+  htim13.Init.Prescaler = 22;
   htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim13.Init.Period = 65535;
   htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -439,7 +439,7 @@ static void MX_TIM14_Init(void)
 
   /* USER CODE END TIM14_Init 1 */
   htim14.Instance = TIM14;
-  htim14.Init.Prescaler = 72;
+  htim14.Init.Prescaler = 22;
   htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim14.Init.Period = 65535;
   htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -723,34 +723,54 @@ void StartDefaultTask(void *argument)
 		printf(myRxData[0],myRxData[1],myRxData[2],myRxData[3],myRxData[4],myRxData[5],myRxData[6]);
 		//HAL_UART_Transmit(&huart3, (uint8_t *)myRxData, 32+2, 10);
 	}
-	*/
-	  	  MX_TIM14_Init();
-	  	  MX_TIM13_Init();
-  /* USER CODE BEGIN 2 */
-	  	  HAL_TIM_PWM_Start(&htim14,TIM_CHANNEL_1);
-	 	  HAL_TIM_PWM_Start(&htim13,TIM_CHANNEL_1);
-	  	  double pulseWidthServo= 0.0011;
+   */
+
+
+	  //ESC
+	  	  double pulseWidthServo= 0.0015;
 	  	  double pulseWidth= 0.0015;
 	  	  double ccr = 0;
 	  	  double ccrservo=0;
 
 	  	  ccrservo=(pulseWidthServo * htim13.Init.Period )/0.02;
 	  	  htim13.Instance -> CCR1=ccrservo;
+	  	  osDelay(2000);
+
+	  	  pulseWidthServo= 0.0011;
+	  	  ccrservo=(pulseWidthServo * htim13.Init.Period )/0.02;
+	  	  htim13.Instance -> CCR1=ccrservo;
 
 	  	  ccr = (pulseWidth * htim14.Init.Period )/0.02;
 	  	  htim14.Instance -> CCR1 = ccr;
-	  	  HAL_Delay(2000);
+	  	  printf("Hello tupu \r\n");
+	  	  osDelay(2000);
+	  	  printf("hi World \r\n");
+//	  	  HAL_Delay(2000);
 
 	  	  double i=0.00001;
-	  	  while(pulseWidth<0.001){
+	  	  while(pulseWidth<0.002){
 	  		  ccr=(pulseWidth*htim14.Init.Period)/0.02;
 	  		  htim14.Instance -> CCR1=ccr;
-	  		  HAL_Delay(50);
-	  		  pulseWidth -= i;
+	 // 		  HAL_Delay(50);
+	  		  printf("antes os  \r\n");
+	  		  	  osDelay(50);
+	  		   printf("despues os \r\n");
+	  		  pulseWidth += i;
 	  	  }
 	  	  ccr = (pulseWidth * htim14.Init.Period)/0.02;
 	  	  htim14.Instance-> CCR1 = ccr;
-	  	  HAL_Delay(2000);
+	  	//  HAL_Delay(2000);
+	  	  osDelay(2000);
+	  	printf("Hello World \r\n");
+
+
+
+	  /*
+	  printf("Hello World \r\n");
+	  osDelay(1000);
+	  printf("Goodbye World \r\n");
+	  osDelay(2000);
+	  */
 
   }
   /* USER CODE END 5 */
